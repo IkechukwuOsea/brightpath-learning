@@ -99,3 +99,27 @@ test("lesson content has unique IDs and valid answer keys", () => {
     }
   }
 });
+
+
+test("rejects malformed question data instead of accidentally scoring it as correct", () => {
+  assert.throws(
+    () => evaluateAttempt({ questions: [{ q: "Broken question", options: ["A", "B"] }] }, {}),
+    /valid answer index/i
+  );
+  assert.throws(
+    () => evaluateAttempt({ questions: [{ q: "Broken question", options: ["A"], answer: 0 }] }, {}),
+    /at least two options/i
+  );
+});
+
+test("only integer option indexes can be counted as correct answers", () => {
+  const result = evaluateAttempt(fractions, { 0: "0", 1: 1.5, 2: 1 });
+  assert.equal(result.correct, 1);
+  assert.equal(result.score, 33);
+});
+
+test("getNextStep falls back safely for malformed progress", () => {
+  assert.match(getNextStep({ "math-fractions": { attempts: 1, lastScore: 150 } }, "math-fractions"), /Start with a short lesson/i);
+  assert.match(getNextStep({ "math-fractions": { attempts: 0, lastScore: 90 } }, "math-fractions"), /Start with a short lesson/i);
+  assert.match(getNextStep({ "math-fractions": { attempts: 1.5, lastScore: 90 } }, "math-fractions"), /Start with a short lesson/i);
+});

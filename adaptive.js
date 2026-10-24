@@ -1,18 +1,38 @@
 // Transparent demo adaptation rules. This is not a trained machine-learning model.
-export function evaluateAttempt(lesson, answers, previous = {}) {
+function validateLesson(lesson) {
   if (!lesson || !Array.isArray(lesson.questions) || lesson.questions.length === 0) {
     throw new TypeError("A lesson with at least one question is required.");
   }
 
-  const safeAnswers = answers && typeof answers === "object" ? answers : {};
+  lesson.questions.forEach((question, index) => {
+    const validQuestion = question &&
+      typeof question === "object" &&
+      Array.isArray(question.options) &&
+      question.options.length >= 2 &&
+      Number.isInteger(question.answer) &&
+      question.answer >= 0 &&
+      question.answer < question.options.length;
+
+    if (!validQuestion) {
+      throw new TypeError(`Question ${index + 1} must have at least two options and a valid answer index.`);
+    }
+  });
+}
+
+export function evaluateAttempt(lesson, answers, previous = {}) {
+  validateLesson(lesson);
+
+  const safeAnswers = answers && typeof answers === "object" && !Array.isArray(answers)
+    ? answers
+    : {};
   const questions = lesson.questions;
   const correct = questions.reduce(
-    (count, item, index) => count + (safeAnswers[index] === item.answer ? 1 : 0),
+    (count, item, index) => count + (Number.isInteger(safeAnswers[index]) && safeAnswers[index] === item.answer ? 1 : 0),
     0
   );
   const score = Math.round((correct / questions.length) * 100);
   const previousAttempts = Number.isFinite(previous?.attempts) && previous.attempts > 0
-    ? Math.floor(previous.attempts)
+    ? Math.min(1_000_000, Math.floor(previous.attempts))
     : 0;
   const previousMastery = Number.isFinite(previous?.mastery)
     ? Math.min(100, Math.max(0, previous.mastery))
@@ -46,10 +66,13 @@ export function evaluateAttempt(lesson, answers, previous = {}) {
 }
 
 export function getNextStep(progress, lessonId) {
-  const p = progress && typeof progress === "object" ? progress[lessonId] : null;
-  if (!p || !Number.isFinite(p.attempts) || p.attempts < 1 || !Number.isFinite(p.lastScore)) {
-    return "Start with a short lesson and check what you already know.";
-  }
+  const p = progress && typeof progress === "object" && !Array.isArray(progress)
+    ? progress[lessonId]
+    : null;
+  const validAttempt = p && Number.isInteger(p.attempts) && p.attempts >= 1 &&
+    Number.isFinite(p.lastScore) && p.lastScore >= 0 && p.lastScore <= 100;
+
+  if (!validAttempt) return "Start with a short lesson and check what you already know.";
   if (p.lastScore < 50) return "Repeat this lesson with guided examples.";
   if (p.lastScore < 80) return "Practise this topic again before moving on.";
   return "Schedule a review, then continue to the next topic.";

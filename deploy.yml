@@ -1,6 +1,7 @@
 name: Build and deploy BrightPath Learning
 
-on:
+# Quote the key so YAML 1.1 parsers do not coerce `on` to a boolean.
+'on':
   push:
     branches:
       - main
@@ -19,7 +20,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
+      - name: Check out source
         uses: actions/checkout@v4
 
       - name: Set up Node.js
@@ -27,13 +28,14 @@ jobs:
         with:
           node-version: 22
 
-      - name: Install dependencies
-        run: npm install --no-audit --no-fund
-
+      # Unit tests use Node's built-in test runner and can run before npm network access.
       - name: Run adaptive-learning tests
         run: npm test
 
-      - name: Build application
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build production app
         run: npm run build
 
       - name: Configure GitHub Pages
