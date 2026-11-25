@@ -79,24 +79,26 @@ The workflow uses `npm install` because a lockfile has not yet been generated su
 
 For a real school deployment, plan for a server API, PostgreSQL database, managed authentication, server-enforced roles and school-level tenant isolation, versioned curriculum standards, educator-reviewed content, audit logging, backups, monitoring, and child privacy/safeguarding workflows. Any future AI tutor should call its provider from the server, use approved curriculum material, and apply age-appropriate safety checks. These are future production considerations; this prototype does not implement them.
 
-## Validation snapshot — 24 October 2026
+## Validation snapshot — 25 November 2026
 
-- `npm test`: **16/16 tests passed** with Node.js 22.16.0.
+- `npm test`: **16/16 tests passed** in the latest GitHub Actions run using Node.js 22.
 - `node --check`: passed for `adaptive.js`, `data.js`, `progress.js`, `adaptive.test.js`, and `vite.config.js`.
 - JSX syntax/transpile check: passed for `App.jsx` and `main.jsx` using the locally available TypeScript parser.
 - Workflow YAML: parsed successfully with PyYAML; `push` and `workflow_dispatch` triggers and the `jobs` section were confirmed.
-- `npm install --no-audit --no-fund`: attempted again in the current environment but timed out. A subsequent `npm run build` attempt stopped with `vite: not found`, because dependencies could not be installed; the production build is therefore **not verified**.
-- Public repository inspection: the files are currently flat at the root, including `deploy.yml`; the nested `.github/workflows/deploy.yml` path must be created/committed in GitHub.
-- GitHub Actions deployment and live browser verification: **not verified**.
+- `npm install --no-audit --no-fund`: **passed** in GitHub Actions.
+- `npm run build`: **passed** in GitHub Actions after the missing `styles.css` file was added.
+- Public repository inspection: application files remain at the repository root, and `.github/workflows/deploy.yml` is present at the required nested path.
+- GitHub Actions Pages deployment: **passed** on 25 November 2026. Published URL: https://ikechukwuosea.github.io/brightpath-learning/.
+- Live browser interaction check: **pending**; the published page could not be opened through the available browser inspection channel, so core lesson, quiz, progress, and mobile-navigation flows still need a human browser check.
 
 ## Phase 1 exit criteria
 
 - [x] Core demo lessons, quiz scoring, progress handling, curriculum selector, and responsive interface are included in the archive.
 - [x] Automated tests cover scoring, recommendation thresholds, malformed questions, own-property answer handling, repeated-attempt mastery, and saved-progress normalization.
 - [x] Deployment workflow definition includes push/manual triggers, test, build, artifact upload, and Pages deployment jobs.
-- [ ] npm dependencies install successfully and the Vite production build completes.
-- [ ] Corrected root files and nested workflow are committed to GitHub.
-- [ ] Latest GitHub Actions build and Pages deployment succeed.
+- [x] npm dependencies install successfully and the Vite production build completes in GitHub Actions.
+- [x] The missing stylesheet is committed and the nested workflow is present in GitHub.
+- [x] Latest GitHub Actions build and Pages deployment succeed.
 - [ ] Published URL is opened in a browser and core flows are manually checked.
 
-Phase 1 remains open until the unchecked items are verified. Phase 2 must not begin before then.
+Phase 1 remains open until the final browser-based interaction check is completed. Phase 2 must not begin before then.
